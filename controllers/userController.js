@@ -43,20 +43,20 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
 exports.getUser = catchAsync(async (req, res, next) => {
   const connection = await connectionStartUp();
   const userID = req.params.id;
-  // if (checkJWTCookie(req, res)) {
-  const [rows, fields] = await connection.execute(
-    `SELECT userid,userrole,username,useremail,password,balance,isonline FROM users WHERE userid like ${userID}`
-  );
-  res.status(200).json({
-    error: "success",
-    data: rows,
-  });
-  connection.end();
-  // } else {
-  //   res.status(400).json({
-  //     error: "You are not authorized",
-  //   });
-  // }
+  if (checkJWTCookie(req, res)) {
+    const [rows, fields] = await connection.execute(
+      `SELECT userid,userrole,username,useremail,password,balance,isonline FROM users WHERE userid like ${userID}`
+    );
+    res.status(200).json({
+      error: "success",
+      data: rows,
+    });
+    connection.end();
+  } else {
+    res.status(400).json({
+      error: "You are not authorized",
+    });
+  }
 }, "An Error Occured when getting user");
 
 const checkSameEmail = async (email) => {
@@ -103,7 +103,7 @@ exports.createUser = catchAsync(async (req, res, next) => {
         });
       }
       const [rows, fields] = await connection.execute(
-        `INSERT INTO users (userrole,username,useremail,password,balance,isonline,profilepicture) VALUES (${req.body.userrole},'${req.body.username}','${req.body.useremail}','${hashedPassword}',0,0,'COMINGSOON')`
+        `INSERT INTO users (userrole,username,useremail,password,balance,isonline,profilepicture) VALUES (${req.body.userrole},'${req.body.username}','${req.body.useremail}','${hashedPassword}',0,0,'${req.body.profilepicture}')`
       );
       res.status(200).json({
         error: "success",
