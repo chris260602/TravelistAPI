@@ -6,3 +6,5 @@
 - dotenv (Digunakan untuk menghubungkan environtment variables)
 - jsonwebtoken (Digunakan untuk validasi user pada saat menggunakan API)
 - mysql2 (Digunakan untuk menyambung database)
+- cookies (Digunakan untuk memanipulasi dan mengambil cookies)
+- cors (Digunakan agar API dapat digunakan oleh Front End)

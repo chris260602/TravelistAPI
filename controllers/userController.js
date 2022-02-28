@@ -1,23 +1,49 @@
 const bcrypt = require("bcrypt");
 const catchAsync = require("../errorHandling");
+const jwt = require("jsonwebtoken");
+const Cookies = require("cookies");
 const connectionStartUp = require("../connection");
+const { checkJWTCookie, getJWTUser } = require("./cookieController");
 const saltRounds = 10;
 
 exports.getAllUsers = catchAsync(async (req, res, next) => {
   const connection = await connectionStartUp();
-  const [rows, fields] = await connection.execute(
-    "SELECT userid,userrole,username,useremail,password,balance,isonline FROM users"
-  );
-  res.status(200).json({
-    error: "success",
-    data: rows,
-  });
-  connection.end();
+  if (checkJWTCookie(req, res)) {
+    const userID = getJWTUser(req, res);
+    if (userID !== -1) {
+      const [rows, fields] = await connection.execute(
+        `SELECT userrole FROM users WHERE userid like '${userID}'`
+      );
+      if (rows[0].userrole === 1) {
+        const [rows, fields] = await connection.execute(
+          "SELECT userid,userrole,username,useremail,password,balance,isonline FROM users"
+        );
+        res.status(200).json({
+          error: "success",
+          data: rows,
+        });
+        connection.end();
+      } else {
+        res.status(400).json({
+          error: "You are not authorized",
+        });
+      }
+    } else {
+      res.status(400).json({
+        error: "You are not authorized",
+      });
+    }
+  } else {
+    res.status(400).json({
+      error: "You are not authorized",
+    });
+  }
 }, "An error occured while getting users");
 
 exports.getUser = catchAsync(async (req, res, next) => {
   const connection = await connectionStartUp();
   const userID = req.params.id;
+  // if (checkJWTCookie(req, res)) {
   const [rows, fields] = await connection.execute(
     `SELECT userid,userrole,username,useremail,password,balance,isonline FROM users WHERE userid like ${userID}`
   );
@@ -26,6 +52,11 @@ exports.getUser = catchAsync(async (req, res, next) => {
     data: rows,
   });
   connection.end();
+  // } else {
+  //   res.status(400).json({
+  //     error: "You are not authorized",
+  //   });
+  // }
 }, "An Error Occured when getting user");
 
 const checkSameEmail = async (email) => {

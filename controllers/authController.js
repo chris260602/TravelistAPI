@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const Cookies = require("cookies");
 const catchAsync = require("../errorHandling");
 const connectionStartUp = require("../connection");
 
@@ -20,6 +21,10 @@ exports.userLogin = catchAsync(async (req, res, next) => {
         jwt.verify(token, process.env.JWT_SECRET, (err, token) => {
           checkValid = token;
         });
+        const oneHour = 60 * 60 * 1000;
+        const newDate = new Date().getTime() + oneHour;
+        const cookies = new Cookies(req, res);
+        cookies.set("JWTTOKEN", token, { expires: new Date(newDate) });
         res.status(200).json({ error: "success", data: checkValid });
       } else {
         res.status(400).json({
