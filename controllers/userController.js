@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const catchAsync = require("../errorHandling");
+const { catchAsync } = require("../errorHandling");
 const jwt = require("jsonwebtoken");
 const Cookies = require("cookies");
 const connectionStartUp = require("../connection");
@@ -15,9 +15,7 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
         `SELECT userrole FROM users WHERE userid like '${userID}'`
       );
       if (rows[0].userrole === 1) {
-        const [rows, fields] = await connection.execute(
-          "SELECT userid,userrole,username,useremail,password,balance,isonline FROM users"
-        );
+        const [rows, fields] = await connection.execute("SELECT * FROM users");
         res.status(200).json({
           error: "success",
           data: rows,
@@ -45,7 +43,7 @@ exports.getUser = catchAsync(async (req, res, next) => {
   const userID = req.params.id;
   if (checkJWTCookie(req, res)) {
     const [rows, fields] = await connection.execute(
-      `SELECT userid,userrole,username,useremail,password,balance,isonline FROM users WHERE userid like ${userID}`
+      `SELECT * FROM users WHERE userid like ${userID}`
     );
     res.status(200).json({
       error: "success",

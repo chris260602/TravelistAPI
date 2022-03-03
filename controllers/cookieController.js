@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Cookies = require("cookies");
-const catchAsync = require("../errorHandling");
+const { catchAsync } = require("../errorHandling");
 const connectionStartUp = require("../connection");
 
 exports.checkJWTCookie = (req, res) => {
