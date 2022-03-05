@@ -3,8 +3,11 @@ const multer = require("multer");
 const path = require("path");
 const {
   getAllProducts,
+  getProduct,
   createProduct,
   totalFiles,
+  updateProduct,
+  deleteProduct,
 } = require("../controllers/productController");
 
 const { isAdmin } = require("../controllers/authController");
@@ -42,4 +45,18 @@ router
     ]),
     createProduct
   );
+router.route("/:id").get(getProduct);
+
+router.route("/updateproduct/:id").patch(
+  isAdmin,
+  upload.fields([
+    { name: "mainpicture", maxCount: 1 },
+    { name: "picture2", maxCount: 1 },
+    { name: "picture3", maxCount: 1 },
+    { name: "picture4", maxCount: 1 },
+  ]),
+  updateProduct
+);
+
+router.route("/deleteproduct/:id").delete(isAdmin, deleteProduct);
 module.exports = router;

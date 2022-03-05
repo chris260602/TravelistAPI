@@ -41,6 +41,7 @@ exports.userLogin = catchAsync(async (req, res, next) => {
 }, "Something went wrong!");
 
 exports.isAdmin = catchAsync(async (req, res, next) => {
+  //Diganti soalnya udah ada userrole di JWT
   const userid = getJWTUser(req, res);
   if (userid >= 0) {
     const connection = await connectionStartUp();
