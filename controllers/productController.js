@@ -113,13 +113,10 @@ const checkCategory = (category) => {
   }
 };
 exports.createProduct = catchAsync(async (req, res, next) => {
-  const userid = getJWTUser(req, res);
-  if (userid >= 0) {
+  const user = getJWTUser(req, res);
+  if (user.length > 0) {
     const connection = await connectionStartUp();
-    const [rows, fields] = await connection.execute(
-      `SELECT userid, userrole from users WHERE userid like '${userid}'`
-    );
-    if (rows[0].userrole === 1) {
+    if (user[1] === 1) {
       const pictures = getPicture();
       if (
         req.body.name &&
@@ -246,13 +243,10 @@ const changeOldPicture = catchAsync(
 );
 
 exports.updateProduct = catchAsync(async (req, res, next) => {
-  const userid = getJWTUser(req, res);
-  if (userid >= 0) {
+  const user = getJWTUser(req, res);
+  if (user.length > 0) {
     const connection = await connectionStartUp();
-    const [rows, fields] = await connection.execute(
-      `SELECT userid, userrole from users WHERE userid like '${userid}'`
-    );
-    if (rows[0].userrole === 1) {
+    if (user[1] === 1) {
       const pictures = getPicture();
       if (
         req.body.name &&
@@ -298,13 +292,10 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
 }, "Something went wrong");
 
 exports.deleteProduct = catchAsync(async (req, res, next) => {
-  const userid = getJWTUser(req, res);
-  if (userid >= 0) {
+  const user = getJWTUser(req, res);
+  if (user.length > 0) {
     const connection = await connectionStartUp();
-    const [rows, fields] = await connection.execute(
-      `SELECT userid, userrole from users WHERE userid like '${userid}'`
-    );
-    if (rows[0].userrole === 1) {
+    if (user[1] === 1) {
       const [rows, fields] = await connection.execute(
         `SELECT mainpicture, picture2,picture3,picture4 from products WHERE productid like '${req.params.id}'`
       );

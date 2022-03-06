@@ -36,11 +36,11 @@ exports.getJWTUser = (req, res) => {
       const oneHour = 60 * 60 * 1000;
       const newDate = new Date().getTime() + oneHour;
       cookies.set("JWTTOKEN", JWTTOKEN, { expires: new Date(newDate) });
-      return isValid.userid;
+      return [isValid.userid, isValid.userrole];
     } else {
-      return -1;
+      return [];
     }
   } else {
-    return -1;
+    return [];
   }
 };

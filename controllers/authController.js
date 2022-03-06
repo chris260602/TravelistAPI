@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const Cookies = require("cookies");
 const { catchAsync } = require("../errorHandling");
 const connectionStartUp = require("../connection");
-const { getJWTUser } = require("./cookieController");
+const { getJWTUser, checkJWTCookie } = require("./cookieController");
 
 exports.userLogin = catchAsync(async (req, res, next) => {
   if (req.body.email && req.body.password) {
@@ -41,15 +41,9 @@ exports.userLogin = catchAsync(async (req, res, next) => {
 }, "Something went wrong!");
 
 exports.isAdmin = catchAsync(async (req, res, next) => {
-  //Diganti soalnya udah ada userrole di JWT
-  const userid = getJWTUser(req, res);
-  if (userid >= 0) {
-    const connection = await connectionStartUp();
-    const [rows, fields] = await connection.execute(
-      `SELECT userid, userrole from users WHERE userid like '${userid}'`
-    );
-    // console.log(rows);
-    if (rows[0].userrole === 1) {
+  const user = getJWTUser(req, res);
+  if (user.length > 0) {
+    if (user[1] === 1) {
       return next();
     } else {
       const error = new Error("You are not authorized");
@@ -60,3 +54,23 @@ exports.isAdmin = catchAsync(async (req, res, next) => {
     return next(error);
   }
 }, "Something went wrong!");
+
+exports.isAuthorizedUser = catchAsync(async (req, res, next) => {
+  if (checkJWTCookie(req, res)) {
+    const user = getJWTUser(req, res);
+    if (user.length > 0) {
+      if (user[0] === parseInt(req.params.id)) {
+        return next();
+      } else {
+        const error = new Error("You are not authorized");
+        return next(error);
+      }
+    } else {
+      const error = new Error("You are not authorized");
+      return next(error);
+    }
+  } else {
+    const error = new Error("You are not authorized");
+    return next(error);
+  }
+}, "Something went wrong");

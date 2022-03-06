@@ -1,3 +1,4 @@
+const fs = require("fs");
 const bcrypt = require("bcrypt");
 const { catchAsync } = require("../errorHandling");
 const jwt = require("jsonwebtoken");
@@ -5,16 +6,13 @@ const Cookies = require("cookies");
 const connectionStartUp = require("../connection");
 const { checkJWTCookie, getJWTUser } = require("./cookieController");
 const saltRounds = 10;
-
+exports.newPicture = [];
 exports.getAllUsers = catchAsync(async (req, res, next) => {
   const connection = await connectionStartUp();
   if (checkJWTCookie(req, res)) {
-    const userID = getJWTUser(req, res);
-    if (userID !== -1) {
-      const [rows, fields] = await connection.execute(
-        `SELECT userrole FROM users WHERE userid like '${userID}'`
-      );
-      if (rows[0].userrole === 1) {
+    const user = getJWTUser(req, res);
+    if (user.length > 0) {
+      if (user[1] === 1) {
         const [rows, fields] = await connection.execute("SELECT * FROM users");
         res.status(200).json({
           error: "success",
@@ -118,3 +116,51 @@ exports.createUser = catchAsync(async (req, res, next) => {
     });
   }
 }, "Error when creating user");
+const deletePicture = (oldPicture) => {
+  const filename = oldPicture.split("http://localhost:3003/public/img/");
+  fs.unlink(`public/img/${filename[1]}`, (err) => {
+    if (err) {
+      console.log(`failed to delete ${filename[1]}`);
+    }
+  });
+};
+
+exports.changeProfilePic = catchAsync(async (req, res, next) => {
+  const connection = await connectionStartUp();
+  const [rows, fields] = await connection.execute(
+    `SELECT profilepicture FROM users WHERE userid like '${req.params.id}'`
+  );
+  if (rows[0].profilepicture === process.env.DEFAULT_PROFILE_PICTURE) {
+    await connection.execute(
+      `UPDATE users SET profilepicture = '${this.newPicture[0].location}' WHERE userid like '${req.params.id}'`
+    );
+  } else {
+    await connection.execute(
+      `UPDATE users SET profilepicture = '${this.newPicture[0].location}' WHERE userid like '${req.params.id}'`
+    );
+    deletePicture(rows[0].profilepicture);
+  }
+  setTimeout(() => {
+    this.newPicture.splice(0, this.newPicture.length);
+  }, 2500);
+  res.status(200).json({
+    error: "success",
+  });
+}, "Something went wrong");
+
+exports.deleteUser = catchAsync(async (req, res, next) => {
+  const connection = await connectionStartUp();
+  const [rows, fields] = await connection.execute(
+    `SELECT profilepicture FROM users WHERE userid like '${req.params.id}'`
+  );
+  if (rows[0].profilepicture !== process.env.DEFAULT_PROFILE_PICTURE) {
+    deletePicture(rows[0].profilepicture);
+  }
+  await connection.execute(
+    `DELETE FROM users WHERE userid like '${req.params.id}'`
+  );
+  connection.end();
+  res.status(200).json({
+    error: "success",
+  });
+}, "Something went wrong");
