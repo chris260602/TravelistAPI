@@ -13,6 +13,7 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
     if (userValid.length > 0) {
       if (userValid[1] === 1) {
         const userList = await users.find();
+
         res.status(200).json({
           error: "success",
           data: userList,

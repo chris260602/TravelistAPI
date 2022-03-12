@@ -117,7 +117,6 @@ exports.createProduct = catchAsync(async (req, res, next) => {
             picture3: pictures[2],
             picture4: pictures[3],
           });
-
           res.status(200).json({
             error: "success",
             data: product,

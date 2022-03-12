@@ -5,7 +5,7 @@ const app = express();
 const userRouter = require("./routes/userRoutes");
 const productRouter = require("./routes/productRoutes");
 const categoriesRouter = require("./routes/categoryRoutes");
-
+require("./connection");
 const corsOptions = {
   origin: process.env.FRONTEND_URL, //frontend url
   credentials: true,

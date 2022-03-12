@@ -6,5 +6,3 @@ const connectionStartUp = async () => {
   await mongoose.connect(URL);
 };
 connectionStartUp().catch((e) => console.log(e));
-
-const users = require("./models/userModel");
