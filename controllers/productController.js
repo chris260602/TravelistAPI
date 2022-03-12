@@ -3,38 +3,33 @@ const path = require("path");
 const jwt = require("jsonwebtoken");
 const Cookies = require("cookies");
 const bcrypt = require("bcrypt");
-const connectionStartUp = require("../connection");
 const { catchAsync } = require("../errorHandling");
 const { checkJWTCookie, getJWTUser } = require("./cookieController");
+const { checkCategory } = require("./categoryController");
+const products = require("../models/productModel");
 exports.totalFiles = [];
 exports.getAllProducts = catchAsync(async (req, res, next) => {
   checkJWTCookie(req, res);
-  const connection = await connectionStartUp();
-  [rows, fields] = await connection.execute("SELECT * FROM products");
+  const productList = await products.find();
   res.status(200).json({
     error: "success",
-    data: rows,
+    data: productList,
   });
-  connection.end();
 }, "Something went wrong");
 
 exports.getProduct = catchAsync(async (req, res, next) => {
   checkJWTCookie(req, res);
-  const connection = await connectionStartUp();
-  [rows, fields] = await connection.execute(
-    `SELECT * FROM products WHERE productid like '${req.params.id}'`
-  );
-  if (rows.length > 0) {
+  const product = await products.findById(req.params.id);
+  if (product !== null) {
     res.status(200).json({
       error: "success",
-      data: rows,
+      data: product,
     });
   } else {
     res.status(400).json({
       error: "No data available",
     });
   }
-  connection.end();
 }, "Something went wrong");
 
 const deletePicture = () => {
@@ -54,15 +49,15 @@ const deletePicture = () => {
 
 const getPicture = () => {
   const newPicture = [];
-  let mainpicture = this.totalFiles.filter(
-    (picture) => picture.fieldname === "mainpicture"
+  let mainPicture = this.totalFiles.filter(
+    (picture) => picture.fieldname === "mainPicture"
   );
-  if (mainpicture.length === 0) {
-    mainpicture = null;
+  if (mainPicture.length === 0) {
+    mainPicture = null;
   } else {
-    mainpicture = mainpicture[0].location;
+    mainPicture = mainPicture[0].location;
   }
-  newPicture.push(mainpicture);
+  newPicture.push(mainPicture);
   let picture2 = this.totalFiles.filter(
     (picture) => picture.fieldname === "picture2"
   );
@@ -92,50 +87,49 @@ const getPicture = () => {
   newPicture.push(picture4);
   return newPicture;
 };
-const checkCategory = (category) => {
-  if (
-    category === "Bathroom" ||
-    category === "Electronics" ||
-    category === "Kitchen" ||
-    category === "Clothes" ||
-    category === "BeautyHealth" ||
-    category === "Tools" ||
-    category === "Bag" ||
-    category === "Accessories" ||
-    category === "FoodDrinks" ||
-    category === "Bed" ||
-    category === "Pest Control" ||
-    category === "Games"
-  ) {
-    return true;
-  } else {
-    return false;
-  }
-};
+
 exports.createProduct = catchAsync(async (req, res, next) => {
   const user = getJWTUser(req, res);
   if (user.length > 0) {
-    const connection = await connectionStartUp();
     if (user[1] === 1) {
       const pictures = getPicture();
       if (
-        req.body.name &&
-        req.body.price &&
-        req.body.price >= 0 &&
-        req.body.stocks &&
-        req.body.stocks >= 0 &&
-        req.body.category &&
-        checkCategory(req.body.category) &&
-        req.body.content &&
+        req.body.productName &&
+        req.body.productPrice &&
+        req.body.productPrice >= 0 &&
+        req.body.productStocks &&
+        req.body.productStocks >= 0 &&
+        req.body.categoryValue &&
+        checkCategory(req.body.categoryValue) &&
+        req.body.productContent &&
         pictures[0] !== null
       ) {
-        const [rows, fields] = await connection.execute(
-          `INSERT INTO products (productname,	price,	productsold,	productstocks,	category,	content,mainpicture,	picture2,	picture3,	picture4) VALUES ('${req.body.name}',${req.body.price},0,${req.body.stocks},'${req.body.category}','${req.body.content}','${pictures[0]}','${pictures[1]}','${pictures[2]}','${pictures[3]}')`
-        );
-        res.status(200).json({
-          error: "success",
-          data: rows,
-        });
+        try {
+          const product = await products.create({
+            productName: req.body.productName,
+            productPrice: req.body.productPrice,
+            productSold: 0,
+            productStocks: req.body.productStocks,
+            productContent: req.body.productContent,
+            categoryValue: req.body.categoryValue,
+            mainPicture: pictures[0],
+            picture2: pictures[1],
+            picture3: pictures[2],
+            picture4: pictures[3],
+          });
+
+          res.status(200).json({
+            error: "success",
+            data: product,
+          });
+        } catch (e) {
+          setTimeout(() => {
+            deletePicture();
+          }, 2500);
+          res.status(400).json({
+            error: "Something went wrong",
+          });
+        }
       } else {
         setTimeout(() => {
           deletePicture();
@@ -162,7 +156,7 @@ exports.createProduct = catchAsync(async (req, res, next) => {
 const deleteOldPictureHelper = catchAsync(async (rows, target) => {
   let filename;
   if (target === 1) {
-    filename = rows.mainpicture.split("http://localhost:3003/public/img/");
+    filename = rows.mainPicture.split("http://localhost:3003/public/img/");
   } else if (target === 2) {
     filename = rows.picture2.split("http://localhost:3003/public/img/");
   } else if (target === 3) {
@@ -179,65 +173,64 @@ const deleteOldPictureHelper = catchAsync(async (rows, target) => {
 
 const changeOldPicture = catchAsync(
   async (newPicture, productid, pictureqty) => {
-    const connection = await connectionStartUp();
-    const [rows, fields] = await connection.execute(
-      `SELECT mainpicture, picture2,picture3,picture4 from products WHERE productid like '${productid}'`
+    const product = await products.findById(
+      productid,
+      "mainPicture picture2 picture3 picture4"
     );
-    const oldRows = rows;
+
     if (newPicture[0] !== null) {
-      if (oldRows[0].mainpicture !== "null") {
-        deleteOldPictureHelper(oldRows[0], 1);
+      if (product.mainPicture !== null) {
+        deleteOldPictureHelper(product, 1);
       }
-      const [rows, fields] = await connection.execute(
-        `UPDATE products SET mainpicture = '${newPicture[0]}' WHERE productid like '${productid}'`
-      );
+      await products.findByIdAndUpdate(productid, {
+        mainPicture: newPicture[0],
+      });
     }
-    if (newPicture[1] !== null || oldRows[0].picture2 !== "null") {
-      if (newPicture[1] !== null && oldRows[0].picture2 === "null") {
-        await connection.execute(
-          `UPDATE products SET picture2 = '${newPicture[1]}' WHERE productid like '${productid}'`
-        );
+    if (newPicture[1] !== null || product.picture2 !== null) {
+      if (newPicture[1] !== null && product.picture2 === null) {
+        await products.findByIdAndUpdate(productid, {
+          picture2: newPicture[1],
+        });
       } else if (
-        (oldRows[0].picture2 !== "null" && pictureqty < 2) ||
+        (product.picture2 !== null && pictureqty < 2) ||
         newPicture[1] !== null
       ) {
-        deleteOldPictureHelper(oldRows[0], 2);
-        await connection.execute(
-          `UPDATE products SET picture2 = '${newPicture[1]}' WHERE productid like '${productid}'`
-        );
+        deleteOldPictureHelper(product, 2);
+        await products.findByIdAndUpdate(productid, {
+          picture2: newPicture[1],
+        });
       }
     }
-    if (newPicture[2] !== null || oldRows[0].picture3 !== "null") {
-      if (newPicture[2] !== null && oldRows[0].picture3 === "null") {
-        await connection.execute(
-          `UPDATE products SET picture3 = '${newPicture[2]}' WHERE productid like '${productid}'`
-        );
+    if (newPicture[2] !== null || product.picture3 !== null) {
+      if (newPicture[2] !== null && product.picture3 === null) {
+        await products.findByIdAndUpdate(productid, {
+          picture3: newPicture[2],
+        });
       } else if (
-        (oldRows[0].picture3 !== "null" && pictureqty < 3) ||
+        (product.picture3 !== null && pictureqty < 3) ||
         newPicture[2] !== null
       ) {
-        deleteOldPictureHelper(oldRows[0], 3);
-        await connection.execute(
-          `UPDATE products SET picture3 = '${newPicture[2]}' WHERE productid like '${productid}'`
-        );
+        deleteOldPictureHelper(product, 3);
+        await products.findByIdAndUpdate(productid, {
+          picture3: newPicture[2],
+        });
       }
     }
-    if (newPicture[3] !== null || oldRows[0].picture4 !== "null") {
-      if (newPicture[3] !== null && oldRows[0].picture4 === "null") {
-        await connection.execute(
-          `UPDATE products SET picture4 = '${newPicture[3]}' WHERE productid like '${productid}'`
-        );
+    if (newPicture[3] !== null || product.picture4 !== null) {
+      if (newPicture[3] !== null && product.picture4 === null) {
+        await products.findByIdAndUpdate(productid, {
+          picture4: newPicture[3],
+        });
       } else if (
-        (oldRows[0].picture4 !== "null" && pictureqty < 4) ||
+        (product.picture4 !== null && pictureqty < 4) ||
         newPicture[3] !== null
       ) {
-        deleteOldPictureHelper(oldRows[0], 4);
-        await connection.execute(
-          `UPDATE products SET picture4 = '${newPicture[3]}' WHERE productid like '${productid}'`
-        );
+        deleteOldPictureHelper(product, 4);
+        await products.findByIdAndUpdate(productid, {
+          picture4: newPicture[3],
+        });
       }
     }
-    connection.end();
   },
   "Something went wrong"
 );
@@ -245,28 +238,37 @@ const changeOldPicture = catchAsync(
 exports.updateProduct = catchAsync(async (req, res, next) => {
   const user = getJWTUser(req, res);
   if (user.length > 0) {
-    const connection = await connectionStartUp();
     if (user[1] === 1) {
       const pictures = getPicture();
       if (
-        req.body.name &&
-        req.body.price &&
-        req.body.price >= 0 &&
-        req.body.stocks &&
-        req.body.stocks >= 0 &&
-        req.body.category &&
+        req.body.productName &&
+        req.body.productPrice &&
+        req.body.productPrice >= 0 &&
+        req.body.productStocks &&
+        req.body.productStocks >= 0 &&
+        req.body.categoryValue &&
         req.body.pictureqty &&
-        checkCategory(req.body.category) &&
-        req.body.content
+        checkCategory(req.body.categoryValue) &&
+        req.body.productContent
       ) {
         changeOldPicture(pictures, req.params.id, req.body.pictureqty);
-
-        const [rows, fields] = await connection.execute(
-          `UPDATE products SET productname = '${req.body.name}',	price = ${req.body.price},	productstocks = ${req.body.stocks},	category = '${req.body.category}',	content = '${req.body.content}' WHERE productid like '${req.params.id}'`
-        );
+        await products.findByIdAndUpdate(req.params.id, {
+          productName: req.body.productName,
+          productPrice: req.body.productPrice,
+          productStocks: req.body.productStocks,
+          categoryValue: req.body.categoryValue,
+          productContent: req.body.productContent,
+        });
+        const product = await products.findByIdAndUpdate(req.params.id, {
+          productName: req.body.productName,
+          productPrice: req.body.productPrice,
+          productStocks: req.body.productStocks,
+          categoryValue: req.body.categoryValue,
+          productContent: req.body.productContent,
+        });
         res.status(200).json({
           error: "success",
-          data: rows,
+          data: product,
         });
       } else {
         setTimeout(() => {
@@ -294,27 +296,24 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
 exports.deleteProduct = catchAsync(async (req, res, next) => {
   const user = getJWTUser(req, res);
   if (user.length > 0) {
-    const connection = await connectionStartUp();
     if (user[1] === 1) {
-      const [rows, fields] = await connection.execute(
-        `SELECT mainpicture, picture2,picture3,picture4 from products WHERE productid like '${req.params.id}'`
+      const product = await products.findById(
+        req.params.id,
+        "mainPicture picture2 picture3 picture4"
       );
-      const images = rows[0];
-      if (images.mainpicture !== "null") {
-        deleteOldPictureHelper(images, 1);
+      if (product.mainPicture !== null) {
+        deleteOldPictureHelper(product, 1);
       }
-      if (images.picture2 !== "null") {
-        deleteOldPictureHelper(images, 2);
+      if (product.picture2 !== null) {
+        deleteOldPictureHelper(product, 2);
       }
-      if (images.picture3 !== "null") {
-        deleteOldPictureHelper(images, 3);
+      if (product.picture3 !== null) {
+        deleteOldPictureHelper(product, 3);
       }
-      if (images.picture4 !== "null") {
-        deleteOldPictureHelper(images, 4);
+      if (product.picture4 !== null) {
+        deleteOldPictureHelper(product, 4);
       }
-      await connection.execute(
-        `DELETE FROM products WHERE productid like '${req.params.id}'`
-      );
+      await products.findByIdAndDelete(req.params.id);
       res.status(200).json({
         error: "success",
       });

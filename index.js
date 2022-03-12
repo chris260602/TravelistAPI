@@ -4,6 +4,7 @@ require("dotenv").config({ path: __dirname + "/config.env" });
 const app = express();
 const userRouter = require("./routes/userRoutes");
 const productRouter = require("./routes/productRoutes");
+const categoriesRouter = require("./routes/categoryRoutes");
 
 const corsOptions = {
   origin: process.env.FRONTEND_URL, //frontend url
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
 
 app.use("/user", userRouter);
 app.use("/products", productRouter);
+app.use("/categories", categoriesRouter);
 
 app.use(errorCatching);
 module.exports = app;

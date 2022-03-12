@@ -1,13 +1,10 @@
 const mysql = require("mysql2/promise");
-
+const mongoose = require("mongoose");
 // create the connection to database
+const URL = process.env.DB_URL.replace("<password>", process.env.DB_PASSWORD);
 const connectionStartUp = async () => {
-  const connection = await mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    database: "travelist",
-  });
-  return connection;
+  await mongoose.connect(URL);
 };
+connectionStartUp().catch((e) => console.log(e));
 
-module.exports = connectionStartUp;
+const users = require("./models/userModel");

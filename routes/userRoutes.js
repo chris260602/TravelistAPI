@@ -42,7 +42,7 @@ router
   .route("/changepicture/:id")
   .patch(
     isAuthorizedUser,
-    upload.fields([{ name: "profilepicture", maxCount: 1 }]),
+    upload.fields([{ name: "profilePicture", maxCount: 1 }]),
     changeProfilePic
   );
 router.route("/deleteuser/:id").delete(isAuthorizedUser, deleteUser);

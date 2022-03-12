@@ -38,7 +38,7 @@ router
   .post(
     isAdmin,
     upload.fields([
-      { name: "mainpicture", maxCount: 1 },
+      { name: "mainPicture", maxCount: 1 },
       { name: "picture2", maxCount: 1 },
       { name: "picture3", maxCount: 1 },
       { name: "picture4", maxCount: 1 },
@@ -50,7 +50,7 @@ router.route("/:id").get(getProduct);
 router.route("/updateproduct/:id").patch(
   isAdmin,
   upload.fields([
-    { name: "mainpicture", maxCount: 1 },
+    { name: "mainPicture", maxCount: 1 },
     { name: "picture2", maxCount: 1 },
     { name: "picture3", maxCount: 1 },
     { name: "picture4", maxCount: 1 },

@@ -2,20 +2,17 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Cookies = require("cookies");
 const { catchAsync } = require("../errorHandling");
-const connectionStartUp = require("../connection");
 const { getJWTUser, checkJWTCookie } = require("./cookieController");
+const users = require("../models/userModel");
 
 exports.userLogin = catchAsync(async (req, res, next) => {
   if (req.body.email && req.body.password) {
-    const connection = await connectionStartUp();
-    const [rows, fields] = await connection.execute(
-      `SELECT * FROM users WHERE useremail like '${req.body.email}'`
-    );
-    if (rows.length >= 1) {
-      const isValid = await bcrypt.compare(req.body.password, rows[0].password);
+    const user = await users.findOne({ userEmail: req.body.email });
+    if (user !== null) {
+      const isValid = await bcrypt.compare(req.body.password, user.password);
       if (isValid) {
         let token = jwt.sign(
-          { userid: rows[0].userid, userrole: rows[0].userrole },
+          { userID: user._id, userRole: user.userRole },
           process.env.JWT_SECRET
         );
         let checkValid;
@@ -59,7 +56,7 @@ exports.isAuthorizedUser = catchAsync(async (req, res, next) => {
   if (checkJWTCookie(req, res)) {
     const user = getJWTUser(req, res);
     if (user.length > 0) {
-      if (user[0] === parseInt(req.params.id)) {
+      if (user[0] === req.params.id) {
         return next();
       } else {
         const error = new Error("You are not authorized");
