@@ -25,4 +25,11 @@ app.use("/products", productRouter);
 app.use("/categories", categoriesRouter);
 
 app.use(errorCatching);
+
+// const app = require("./index");
+
+app.listen(process.env.PORT, () => {
+  console.log("Listening");
+});
+
 module.exports = app;
