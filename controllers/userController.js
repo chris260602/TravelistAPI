@@ -38,7 +38,9 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
 exports.getUser = catchAsync(async (req, res, next) => {
   const userID = req.params.id;
   if (checkJWTCookie(req, res)) {
-    const user = await users.findById(userID).exec();
+    const user = await users
+      .findById(userID, "userRole userName userEmail balance profilePicture")
+      .exec();
     res.status(200).json({
       error: "success",
       data: user,
