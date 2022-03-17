@@ -1,6 +1,6 @@
 const express = require("express");
 const { errorCatching } = require("./errorHandling");
-require("dotenv").config({ path: __dirname + "/config.env" });
+require("dotenv").config();
 const app = express();
 const userRouter = require("./routes/userRoutes");
 const productRouter = require("./routes/productRoutes");
