@@ -25,7 +25,9 @@ app.use("/public", express.static(`public`));
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
-  res.send("Travelist API 1.0 Created by Christoper Lim, Martin & Reihan");
+  res.send(
+    "Travelist API 1.0 Created by Christoper Lim, Martin & Reihan (TEST)"
+  );
 });
 
 app.use("/user", userRouter);
