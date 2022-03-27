@@ -27,7 +27,7 @@ exports.userLogin = catchAsync(async (req, res, next) => {
         });
         const oneHour = 60 * 60 * 1000;
         const newDate = new Date().getTime() + oneHour;
-        const cookies = new Cookies(req, res);
+        const cookies = new Cookies(req, res, { secure: true });
         cookies.set("JWTTOKEN", token, {
           expires: new Date(newDate),
           sameSite: "none",
