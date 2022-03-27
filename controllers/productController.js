@@ -5,25 +5,67 @@ const Cookies = require("cookies");
 const bcrypt = require("bcrypt");
 const { catchAsync } = require("../errorHandling");
 const { checkJWTCookie, getJWTUser } = require("./cookieController");
-const { checkCategory } = require("./categoryController");
 const products = require("../models/productModel");
+const categories = require("../models/categoryModel");
 exports.totalFiles = [];
+
+const getUsableProductPictureHandler = (product) => {
+  if (product.mainPicture !== null) {
+    product.mainPicture = `${process.env.BACKEND_URL}/${process.env.PRODUCT_PICTURE_URL}/${product.mainPicture}`;
+  }
+  if (product.picture2 !== null) {
+    product.picture2 = `${process.env.BACKEND_URL}/${process.env.PRODUCT_PICTURE_URL}/${product.picture2}`;
+  }
+  if (product.picture3 !== null) {
+    product.picture3 = `${process.env.BACKEND_URL}/${process.env.PRODUCT_PICTURE_URL}/${product.picture3}`;
+  }
+  if (product.picture4 !== null) {
+    product.picture4 = `${process.env.BACKEND_URL}/${process.env.PRODUCT_PICTURE_URL}/${product.picture4}`;
+  }
+  return product;
+};
+
+const getUsableProductPicture = (productList) => {
+  let finalProduct;
+  if (productList === null) {
+    return [];
+  }
+  if (!productList.length) {
+    finalProduct = getUsableProductPictureHandler(productList);
+  } else {
+    finalProduct = productList.map((product) =>
+      getUsableProductPictureHandler(product)
+    );
+  }
+  return finalProduct;
+};
+
+const isCategoriesValueValid = async (testedValue) => {
+  const categoryList = await categories.find({ categoryValue: testedValue });
+  if (categoryList.length > 0) {
+    return true;
+  } else {
+    return false;
+  }
+};
 exports.getAllProducts = catchAsync(async (req, res, next) => {
   checkJWTCookie(req, res);
   const productList = await products.find();
+  const finalProduct = getUsableProductPicture(productList);
   res.status(200).json({
     error: "success",
-    data: productList,
+    data: finalProduct,
   });
 }, "Something went wrong");
 
 exports.getProduct = catchAsync(async (req, res, next) => {
   checkJWTCookie(req, res);
   const product = await products.findById(req.params.id);
+  const finalProduct = getUsableProductPicture(product);
   if (product !== null) {
     res.status(200).json({
       error: "success",
-      data: product,
+      data: finalProduct,
     });
   } else {
     res.status(400).json({
@@ -35,14 +77,14 @@ exports.getProduct = catchAsync(async (req, res, next) => {
 const deletePicture = () => {
   for (let i = 0; i < this.totalFiles.length; i++) {
     if (this.totalFiles[i] !== null) {
-      const filename = this.totalFiles[i].location.split(
-        "http://localhost:3003/public/img/"
-      );
-      fs.unlink(`public/img/${filename[1]}`, (err) => {
-        if (err) {
-          console.log(`failed to delete ${filename[1]}`);
+      fs.unlink(
+        `${process.env.PRODUCT_PICTURE_URL}/${this.totalFiles[i].location}`,
+        (err) => {
+          if (err) {
+            console.log(`failed to delete ${this.totalFiles[i].location}`);
+          }
         }
-      });
+      );
     }
   }
 };
@@ -100,33 +142,42 @@ exports.createProduct = catchAsync(async (req, res, next) => {
         req.body.productStocks &&
         req.body.productStocks >= 0 &&
         req.body.categoryValue &&
-        checkCategory(req.body.categoryValue) &&
         req.body.productContent &&
         pictures[0] !== null
       ) {
-        try {
-          const product = await products.create({
-            productName: req.body.productName,
-            productPrice: req.body.productPrice,
-            productSold: 0,
-            productStocks: req.body.productStocks,
-            productContent: req.body.productContent,
-            categoryValue: req.body.categoryValue,
-            mainPicture: pictures[0],
-            picture2: pictures[1],
-            picture3: pictures[2],
-            picture4: pictures[3],
-          });
-          res.status(200).json({
-            error: "success",
-            data: product,
-          });
-        } catch (e) {
+        const isValid = await isCategoriesValueValid(req.body.categoryValue);
+        if (isValid) {
+          try {
+            const product = await products.create({
+              productName: req.body.productName,
+              productPrice: req.body.productPrice,
+              productSold: 0,
+              productStocks: req.body.productStocks,
+              productContent: req.body.productContent,
+              categoryValue: req.body.categoryValue,
+              mainPicture: pictures[0],
+              picture2: pictures[1],
+              picture3: pictures[2],
+              picture4: pictures[3],
+            });
+            res.status(200).json({
+              error: "success",
+              data: product,
+            });
+          } catch (e) {
+            setTimeout(() => {
+              deletePicture();
+            }, 2500);
+            res.status(400).json({
+              error: "Something went wrong",
+            });
+          }
+        } else {
           setTimeout(() => {
             deletePicture();
           }, 2500);
           res.status(400).json({
-            error: "Something went wrong",
+            error: "Invalid Category Value",
           });
         }
       } else {
@@ -155,17 +206,17 @@ exports.createProduct = catchAsync(async (req, res, next) => {
 const deleteOldPictureHelper = catchAsync(async (rows, target) => {
   let filename;
   if (target === 1) {
-    filename = rows.mainPicture.split("http://localhost:3003/public/img/");
+    filename = rows.mainPicture;
   } else if (target === 2) {
-    filename = rows.picture2.split("http://localhost:3003/public/img/");
+    filename = rows.picture2;
   } else if (target === 3) {
-    filename = rows.picture3.split("http://localhost:3003/public/img/");
+    filename = rows.picture3;
   } else if (target === 4) {
-    filename = rows.picture4.split("http://localhost:3003/public/img/");
+    filename = rows.picture4;
   }
-  fs.unlink(`public/img/${filename[1]}`, (err) => {
+  fs.unlink(`${process.env.PRODUCT_PICTURE_URL}/${filename}`, (err) => {
     if (err) {
-      console.log(`failed to delete ${filename[1]}`);
+      console.log(`failed to delete ${filename}`);
     }
   });
 }, "Something went wrong");
@@ -247,28 +298,37 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
         req.body.productStocks >= 0 &&
         req.body.categoryValue &&
         req.body.pictureqty &&
-        checkCategory(req.body.categoryValue) &&
         req.body.productContent
       ) {
-        changeOldPicture(pictures, req.params.id, req.body.pictureqty);
-        await products.findByIdAndUpdate(req.params.id, {
-          productName: req.body.productName,
-          productPrice: req.body.productPrice,
-          productStocks: req.body.productStocks,
-          categoryValue: req.body.categoryValue,
-          productContent: req.body.productContent,
-        });
-        const product = await products.findByIdAndUpdate(req.params.id, {
-          productName: req.body.productName,
-          productPrice: req.body.productPrice,
-          productStocks: req.body.productStocks,
-          categoryValue: req.body.categoryValue,
-          productContent: req.body.productContent,
-        });
-        res.status(200).json({
-          error: "success",
-          data: product,
-        });
+        const isValid = await isCategoriesValueValid(req.body.categoryValue);
+        if (isValid) {
+          changeOldPicture(pictures, req.params.id, req.body.pictureqty);
+          await products.findByIdAndUpdate(req.params.id, {
+            productName: req.body.productName,
+            productPrice: req.body.productPrice,
+            productStocks: req.body.productStocks,
+            categoryValue: req.body.categoryValue,
+            productContent: req.body.productContent,
+          });
+          const product = await products.findByIdAndUpdate(req.params.id, {
+            productName: req.body.productName,
+            productPrice: req.body.productPrice,
+            productStocks: req.body.productStocks,
+            categoryValue: req.body.categoryValue,
+            productContent: req.body.productContent,
+          });
+          res.status(200).json({
+            error: "success",
+            data: product,
+          });
+        } else {
+          setTimeout(() => {
+            deletePicture();
+          }, 2500);
+          res.status(400).json({
+            error: "Something went wrong",
+          });
+        }
       } else {
         setTimeout(() => {
           deletePicture();

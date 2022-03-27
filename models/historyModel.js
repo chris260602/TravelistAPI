@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+let ObjectId = mongoose.Types.ObjectId;
 const historySchema = new mongoose.Schema({
   userID: { type: ObjectId, ref: "User", required: [true, "userID needed"] },
   productID: {

@@ -8,12 +8,15 @@ const {
   updateCategory,
   deleteCategory,
 } = require("../controllers/categoryController");
-const { isAdmin } = require("../controllers/authController");
+const {
+  isAdmin,
+  isCategoryDataFound,
+} = require("../controllers/authController");
 const app = express();
 const router = express.Router();
 const diskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "../public", "/icons"));
+    cb(null, path.join(__dirname, "../public", "/icons/category"));
   },
   filename: function (req, file, cb) {
     let location =
@@ -21,7 +24,7 @@ const diskStorage = multer.diskStorage({
     cb(null, location);
     categoryIcon.push({
       fieldname: file.fieldname,
-      location: process.env.BACKEND_URL + "/public/icons/" + location,
+      location: location,
     });
   },
 });
@@ -40,6 +43,7 @@ router
   .route("/update/:id")
   .patch(
     isAdmin,
+    isCategoryDataFound,
     upload.fields([{ name: "categoryIcon", maxCount: 1 }]),
     updateCategory
   );

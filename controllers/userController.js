@@ -7,16 +7,36 @@ const Cookies = require("cookies");
 const { checkJWTCookie, getJWTUser } = require("./cookieController");
 const saltRounds = 10;
 exports.newPicture = [];
+
+const getUsableUserPictureHandler = (user) => {
+  if (user.profilePicture) {
+    user.profilePicture = `${process.env.BACKEND_URL}/${process.env.PROFILE_PICTURE_URL}/${user.profilePicture}`;
+  }
+  return user;
+};
+
+const getUsableUserPicture = (userList) => {
+  let finalUser;
+  if (userList === null) {
+    return [];
+  }
+  if (!userList.length) {
+    finalUser = getUsableUserPictureHandler(userList);
+  } else {
+    finalUser = userList.map((user) => getUsableUserPictureHandler(user));
+  }
+  return finalUser;
+};
 exports.getAllUsers = catchAsync(async (req, res, next) => {
   if (checkJWTCookie(req, res)) {
     const userValid = getJWTUser(req, res);
     if (userValid.length > 0) {
       if (userValid[1] === 1) {
         const userList = await users.find();
-
+        const finalUser = getUsableUserPicture(userList);
         res.status(200).json({
           error: "success",
-          data: userList,
+          data: finalUser,
         });
       } else {
         res.status(400).json({
@@ -41,6 +61,8 @@ exports.getUser = catchAsync(async (req, res, next) => {
     const user = await users
       .findById(userID, "userRole userName userEmail balance profilePicture")
       .exec();
+    user.profilePicture = `${process.env.BACKEND_URL}/${process.env.PROFILE_PICTURE_URL}/${user.profilePicture}`;
+
     res.status(200).json({
       error: "success",
       data: user,
@@ -92,13 +114,21 @@ exports.createUser = catchAsync(async (req, res, next) => {
           error: "Something went wrong!",
         });
       }
+      const token = jwt.sign(
+        {
+          userName: req.body.userName,
+          userEmail: req.body.userEmail,
+        },
+        process.env.JWT_SECRET
+      );
       const user = await users.create({
         userRole: 0,
         userName: req.body.userName,
         userEmail: req.body.userEmail,
         password: hashedPassword,
         balance: 0,
-        profilePicture: req.body.profilePicture,
+        profilePicture: process.env.DEFAULT_PROFILE_PICTURE,
+        confirmationCode: token,
       });
 
       res.status(200).json({
@@ -116,10 +146,9 @@ exports.createUser = catchAsync(async (req, res, next) => {
   }
 }, "Error when creating user");
 const deletePicture = (oldPicture) => {
-  const filename = oldPicture.split("http://localhost:3003/public/img/");
-  fs.unlink(`public/img/${filename[1]}`, (err) => {
+  fs.unlink(`${process.env.PROFILE_PICTURE_URL}/${oldPicture}`, (err) => {
     if (err) {
-      console.log(`failed to delete ${filename[1]}`);
+      console.log(`failed to delete ${oldPicture}`);
     }
   });
 };
@@ -153,4 +182,29 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
   res.status(200).json({
     error: "success",
   });
+}, "Something went wrong");
+
+exports.activeUser = catchAsync(async (req, res, next) => {
+  if (req.params.id !== "-1") {
+    const user = await users.find({
+      confirmationCode: req.params.id,
+    });
+    if (user.length > 0) {
+      await users.updateOne(
+        { confirmationCode: req.params.id },
+        { accountStatus: "Active", confirmationCode: "-1" }
+      );
+      res.status(200).json({
+        error: "Success",
+      });
+    } else {
+      res.status(400).json({
+        error: "Invalid ID",
+      });
+    }
+  } else {
+    res.status(400).json({
+      error: "Invalid ID",
+    });
+  }
 }, "Something went wrong");

@@ -12,11 +12,10 @@ const {
 
 const { isAdmin } = require("../controllers/authController");
 
-const app = express();
 const router = express.Router();
 const diskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "../public", "/img"));
+    cb(null, path.join(__dirname, "../public", "/img/products"));
   },
   filename: function (req, file, cb) {
     let location =
@@ -24,7 +23,7 @@ const diskStorage = multer.diskStorage({
     cb(null, location);
     totalFiles.push({
       fieldname: file.fieldname,
-      location: process.env.BACKEND_URL + "/public/img/" + location,
+      location: location,
     });
   },
 });

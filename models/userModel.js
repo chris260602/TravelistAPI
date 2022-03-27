@@ -31,6 +31,16 @@ const userSchema = new mongoose.Schema({
   profilePicture: {
     type: String,
     required: [true, "Must Include Profile Picture"],
+    default: process.env.DEFAULT_PROFILE_PICTURE,
+  },
+  accountStatus: {
+    type: String,
+    enum: ["Pending", "Active"],
+    default: "Pending",
+  },
+  confirmationCode: {
+    type: String,
+    unique: [true, "Must have unique code"],
   },
 });
 

@@ -1,7 +1,6 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
-const app = express();
 const router = express.Router();
 
 const {
@@ -11,6 +10,7 @@ const {
   changeProfilePic,
   newPicture,
   deleteUser,
+  activeUser,
 } = require("../controllers/userController");
 const {
   userLogin,
@@ -19,7 +19,7 @@ const {
 
 const diskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "../public", "/img"));
+    cb(null, path.join(__dirname, "../public", "/img/profile"));
   },
   filename: function (req, file, cb) {
     let location =
@@ -27,7 +27,7 @@ const diskStorage = multer.diskStorage({
     cb(null, location);
     newPicture.push({
       fieldname: file.fieldname,
-      location: process.env.BACKEND_URL + "/public/img/" + location,
+      location: location,
     });
   },
 });
@@ -46,4 +46,5 @@ router
     changeProfilePic
   );
 router.route("/deleteuser/:id").delete(isAuthorizedUser, deleteUser);
+router.route("/activate/:id").post(activeUser);
 module.exports = router;
