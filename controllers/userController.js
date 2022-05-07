@@ -5,6 +5,7 @@ const { catchAsync } = require("../errorHandling");
 const jwt = require("jsonwebtoken");
 const Cookies = require("cookies");
 const { checkJWTCookie, getJWTUser } = require("./cookieController");
+const { sendEmailVerification } = require("./emailController");
 const saltRounds = 10;
 exports.newPicture = [];
 
@@ -130,7 +131,10 @@ exports.createUser = catchAsync(async (req, res, next) => {
         profilePicture: process.env.DEFAULT_PROFILE_PICTURE,
         confirmationCode: token,
       });
-
+      sendEmailVerification({
+        email: req.body.userEmail,
+        confirmationCode: token,
+      });
       res.status(200).json({
         error: "success",
       });
@@ -208,3 +212,15 @@ exports.activeUser = catchAsync(async (req, res, next) => {
     });
   }
 }, "Something went wrong");
+
+exports.verifyAccount = catchAsync(async (req, res, next) => {
+  const user = await users.findOneAndUpdate(
+    { confirmationCode: req.params.code },
+    { confirmationCode: "-1", accountStatus: "Active" }
+  );
+  if (user) {
+    res.redirect(`${process.env.FRONTEND_URL}/login`);
+  } else {
+    res.redirect(`${process.env.FRONTEND_URL}/404`);
+  }
+});

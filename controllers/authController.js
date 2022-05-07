@@ -7,7 +7,6 @@ const users = require("../models/userModel");
 const categories = require("../models/categoryModel");
 
 exports.userLogin = catchAsync(async (req, res, next) => {
-  console.log("Lewat sini");
   if (req.body.email && req.body.password) {
     const user = await users.findOne({ userEmail: req.body.email });
     if (user !== null && user.accountStatus === "Pending") {
