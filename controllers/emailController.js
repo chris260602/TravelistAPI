@@ -32,6 +32,9 @@ const createTransporter = async () => {
       clientSecret: process.env.CLIENT_SECRET,
       refreshToken: process.env.REFRESH_TOKEN,
     },
+    tls: {
+      ciphers: "SSLv3",
+    },
   });
 
   return transporter;
