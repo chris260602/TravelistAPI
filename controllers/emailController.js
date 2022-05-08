@@ -24,6 +24,8 @@ const createTransporter = async () => {
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
+    port: 465,
+    secure: true,
     auth: {
       type: "OAuth2",
       user: process.env.EMAIL,
@@ -47,10 +49,6 @@ exports.sendEmail = async (emailOptions) => {
 };
 
 exports.sendEmailVerification = async (emailOptions) => {
-  google.options({
-    http2: true,
-  });
-
   const config = {
     subject: "Account Verification for " + emailOptions.email,
     text:
