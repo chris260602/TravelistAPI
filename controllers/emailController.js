@@ -1,5 +1,5 @@
 const nodemailer = require("nodemailer");
-const { google } = require("googleapis");
+const { google, drive_v3, Auth, Common } = require("googleapis");
 const OAuth2 = google.auth.OAuth2;
 
 const createTransporter = async () => {
@@ -36,12 +36,17 @@ const createTransporter = async () => {
 
   return transporter;
 };
+
 exports.sendEmail = async (emailOptions) => {
   let emailTransporter = await createTransporter();
   await emailTransporter.sendMail(emailOptions);
 };
 
 exports.sendEmailVerification = async (emailOptions) => {
+  google.options({
+    http2: true,
+  });
+
   const config = {
     subject: "Account Verification for " + emailOptions.email,
     text:

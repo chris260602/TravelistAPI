@@ -4,6 +4,7 @@ const path = require("path");
 const {
   categoryIcon,
   getAllCategories,
+  getCategory,
   createCategory,
   updateCategory,
   deleteCategory,
@@ -32,6 +33,7 @@ const upload = multer({
   storage: diskStorage,
 });
 router.route("/").get(getAllCategories);
+router.route("/:id").get(getCategory);
 router
   .route("/create")
   .post(

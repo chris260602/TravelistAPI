@@ -303,13 +303,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
         const isValid = await isCategoriesValueValid(req.body.categoryValue);
         if (isValid) {
           changeOldPicture(pictures, req.params.id, req.body.pictureqty);
-          await products.findByIdAndUpdate(req.params.id, {
-            productName: req.body.productName,
-            productPrice: req.body.productPrice,
-            productStocks: req.body.productStocks,
-            categoryValue: req.body.categoryValue,
-            productContent: req.body.productContent,
-          });
+
           const product = await products.findByIdAndUpdate(req.params.id, {
             productName: req.body.productName,
             productPrice: req.body.productPrice,

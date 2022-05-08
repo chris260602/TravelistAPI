@@ -34,6 +34,17 @@ exports.getAllCategories = catchAsync(async (req, res, next) => {
   });
 }, "Something went wrong");
 
+exports.getCategory = catchAsync(async (req, res, next) => {
+  const categoryList = await categories.findById(req.params.id);
+  if (categoryList && categoryList.data !== null) {
+    categoryList.categoryIcon = `${process.env.BACKEND_URL}/${process.env.CATEGORY_PICTURE_URL}/${categoryList.categoryIcon}`;
+  }
+  res.status(200).json({
+    error: "success",
+    data: categoryList,
+  });
+}, "Something went wrong");
+
 // exports.checkCategory = (category) => {
 //   if (
 //     category === "Bathroom" ||
@@ -95,13 +106,12 @@ exports.createCategory = catchAsync(async (req, res, next) => {
 exports.updateCategory = catchAsync(async (req, res, next) => {
   try {
     const categoryList = await categories.findById(req.params.id);
-
     if (
       categoryList !== null &&
       req.body.categoryName &&
       req.body.categoryName.length > 0 &&
       req.body.categoryValue &&
-      this.checkCategory(req.body.categoryValue) &&
+      req.body.categoryValue.length > 0 &&
       this.categoryIcon.length > 0
     ) {
       deleteIcon(categoryList.categoryIcon);
@@ -109,6 +119,21 @@ exports.updateCategory = catchAsync(async (req, res, next) => {
         categoryName: req.body.categoryName,
         categoryValue: req.body.categoryValue,
         categoryIcon: this.categoryIcon[0].location,
+      });
+      res.status(200).json({
+        error: "success",
+      });
+    } else if (
+      categoryList !== null &&
+      req.body.categoryName &&
+      req.body.categoryName.length > 0 &&
+      req.body.categoryValue &&
+      req.body.categoryValue.length > 0 &&
+      this.categoryIcon.length === 0
+    ) {
+      await categories.findByIdAndUpdate(req.params.id, {
+        categoryName: req.body.categoryName,
+        categoryValue: req.body.categoryValue,
       });
       res.status(200).json({
         error: "success",
