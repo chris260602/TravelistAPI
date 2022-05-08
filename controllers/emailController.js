@@ -34,6 +34,7 @@ const createTransporter = async () => {
     },
     tls: {
       ciphers: "SSLv3",
+      rejectUnauthorized: false,
     },
   });
 
