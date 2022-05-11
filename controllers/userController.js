@@ -188,6 +188,51 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
   });
 }, "Something went wrong");
 
+exports.changeUserName = catchAsync(async (req, res, next) => {
+  await users.findByIdAndUpdate(req.body.body.id, {
+    userName: req.body.body.newName,
+  });
+
+  res.status(200).json({
+    error: "success",
+  });
+}, "Something went wrong");
+
+exports.changeUserPassword = catchAsync(async (req, res, next) => {
+  const user = await users.findById(req.body.body.id);
+  const isValid = await bcrypt.compare(
+    req.body.body.oldPassword,
+    user.password
+  );
+
+  if (isValid) {
+    let hashedPassword = await bcrypt.hash(
+      req.body.body.newPassword,
+      saltRounds
+    );
+    await users.findByIdAndUpdate(req.body.body.id, {
+      password: hashedPassword,
+    });
+    res.status(200).json({
+      error: "success",
+    });
+  } else {
+    res.status(400).json({
+      error: "Invalid",
+    });
+  }
+}, "Something went wrong");
+
+exports.changeUserEmail = catchAsync(async (req, res, next) => {
+  await users.findByIdAndUpdate(req.body.body.id, {
+    userEmail: req.body.body.newEmail,
+  });
+
+  res.status(200).json({
+    error: "success",
+  });
+}, "Something went wrong");
+
 exports.activeUser = catchAsync(async (req, res, next) => {
   if (req.params.id !== "-1") {
     const user = await users.find({

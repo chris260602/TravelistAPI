@@ -11,6 +11,9 @@ const {
   newPicture,
   deleteUser,
   activeUser,
+  changeUserPassword,
+  changeUserName,
+  changeUserEmail,
 } = require("../controllers/userController");
 const {
   userLogin,
@@ -46,5 +49,8 @@ router
     changeProfilePic
   );
 router.route("/deleteuser/:id").delete(isAuthorizedUser, deleteUser);
+router.route("/changeusername").patch(changeUserName);
+router.route("/changeuserpassword").patch(changeUserPassword);
+router.route("/changeuseremail").patch(changeUserEmail);
 router.route("/activate/:id").post(activeUser);
 module.exports = router;
