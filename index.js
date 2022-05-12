@@ -10,7 +10,9 @@ const categoriesRouter = require("./routes/categoryRoutes");
 const cartRouter = require("./routes/cartRoutes");
 const favouriteRouter = require("./routes/favouriteRoutes");
 const historyRouter = require("./routes/historyRoutes");
+const topUpRouter = require("./routes/topUpRoutes");
 const emailRouter = require("./routes/emailRoutes");
+
 require("./connection");
 const corsOptions = {
   origin: [process.env.FRONTEND_URL],
@@ -34,6 +36,7 @@ app.use("/categories", categoriesRouter);
 app.use("/cart", cartRouter);
 app.use("/favourite", favouriteRouter);
 app.use("/history", historyRouter);
+app.use("/topup", topUpRouter);
 app.use("/email", emailRouter);
 app.use(errorCatching);
 
