@@ -377,3 +377,22 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
     });
   }
 }, "Something went wrong");
+
+exports.getPopularProducts = catchAsync(async (req, res, next) => {
+  const productList = await products
+    .find()
+    .sort("-productSold")
+    .limit(3)
+    .exec();
+  if (productList.length > 0) {
+    const finalData = getUsableProductPicture(productList);
+    res.status(200).json({
+      data: finalData,
+      error: "success",
+    });
+  } else {
+    res.status(400).json({
+      error: "No Data",
+    });
+  }
+}, "Something went wrong");

@@ -8,6 +8,7 @@ const {
   totalFiles,
   updateProduct,
   deleteProduct,
+  getPopularProducts,
 } = require("../controllers/productController");
 
 const { isAdmin } = require("../controllers/authController");
@@ -44,6 +45,7 @@ router
     ]),
     createProduct
   );
+router.route("/popular").get(getPopularProducts);
 router.route("/:id").get(getProduct);
 
 router.route("/updateproduct/:id").patch(
