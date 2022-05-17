@@ -12,6 +12,7 @@ const favouriteRouter = require("./routes/favouriteRoutes");
 const historyRouter = require("./routes/historyRoutes");
 const topUpRouter = require("./routes/topUpRoutes");
 const emailRouter = require("./routes/emailRoutes");
+const transactionRouter = require("./routes/transactionRoutes");
 
 require("./connection");
 const corsOptions = {
@@ -34,6 +35,7 @@ app.use("/user", userRouter);
 app.use("/products", productRouter);
 app.use("/categories", categoriesRouter);
 app.use("/cart", cartRouter);
+app.use("/transaction", transactionRouter);
 app.use("/favourite", favouriteRouter);
 app.use("/history", historyRouter);
 app.use("/topup", topUpRouter);

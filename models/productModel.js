@@ -21,8 +21,8 @@ const productSchema = new mongoose.Schema({
   productStocks: {
     type: Number,
     required: [true, "You need a product stocks"],
-    min: 1,
-    default: 1,
+    min: 0,
+    default: 0,
   },
   productContent: {
     type: String,
