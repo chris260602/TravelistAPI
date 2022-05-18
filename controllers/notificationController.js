@@ -16,10 +16,22 @@ exports.getAllNotification = catchAsync(async (req, res, next) => {
   });
 }, "Something went wrong");
 
-exports.getNotificationById = catchAsync(async (req, res, next) => {
+exports.getNotificationByUserId = catchAsync(async (req, res, next) => {
   //   console.log(req.params.id);
   const { id } = req.params;
   const notificationList = await notifications.find({ userID: id });
+  res.status(200).json({
+    error: "success",
+    data: notificationList,
+  });
+}, "Something went wrong");
+
+exports.getNotReadNotificationByUserId = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const notificationList = await notifications.find({
+    userID: id,
+    seen: false,
+  });
   res.status(200).json({
     error: "success",
     data: notificationList,

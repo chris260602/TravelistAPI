@@ -85,7 +85,9 @@ exports.getFilteredProducts = catchAsync(async (req, res, next) => {
   } else if (category) {
     productList = await products.find({ categoryValue: category });
   } else if (name) {
-    productList = await products.find({ productName: { $regex: name } });
+    productList = await products.find({
+      productName: { $regex: `${name}`, $options: "i" },
+    });
   }
   const finalProduct = getUsableProductPicture(productList);
   res.status(200).json({

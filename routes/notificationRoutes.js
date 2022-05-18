@@ -1,13 +1,14 @@
 const express = require("express");
 const {
   getAllNotification,
-  getNotificationById,
   sendNotificationToUser,
   sendNotificationToAll,
   deleteNotificationAll,
   deleteNotificationById,
   updateSeenNotification,
   deleteUserNotification,
+  getNotificationByUserId,
+  getNotReadNotificationByUserId,
 } = require("../controllers/notificationController");
 
 const router = express.Router();
@@ -19,6 +20,7 @@ router.route("/deleteusernotification").delete(deleteUserNotification);
 router.route("/deletebyId").delete(deleteNotificationById);
 router.route("/setseen").patch(updateSeenNotification);
 router.route("/send").post(sendNotificationToUser);
-router.route("/:id").get(getNotificationById);
+router.route("/notread/:id").get(getNotReadNotificationByUserId);
+router.route("/:id").get(getNotificationByUserId);
 
 module.exports = router;

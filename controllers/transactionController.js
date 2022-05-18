@@ -1,6 +1,7 @@
 const transaction = require("../models/transactionModel");
 const users = require("../models/userModel");
 const products = require("../models/productModel");
+const notifications = require("../models/notificationModel");
 const { catchAsync } = require("../errorHandling");
 const cart = require("../models/cartModel");
 
@@ -146,6 +147,7 @@ exports.addTransaction = catchAsync(async (req, res, next) => {
     await updateProductStocks(products);
     await deleteAllCart(userID);
     await updateUserBalance(userID, totalPrice);
+    await sendTransactionNotification({ userID: userID });
     res.status(200).json({
       error: "success",
     });
@@ -186,6 +188,17 @@ const updateProductStocks = async (productsData) => {
       .catch((e) => {
         console.log(e);
       });
+  });
+};
+const sendTransactionNotification = async (data) => {
+  const finalContent = `Your Product Purchase is Successful. Our team at travelist will start to prepare and ship your order to your destination.
+
+  Thank you for purchasing at Travelist.`;
+  await notifications.create({
+    userID: data.userID,
+    type: "Shopping",
+    title: "Product Purchase Successful",
+    content: finalContent,
   });
 };
 exports.changeTransactionStatus = catchAsync(async (req, res, next) => {
