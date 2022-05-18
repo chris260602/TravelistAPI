@@ -9,10 +9,10 @@ const productRouter = require("./routes/productRoutes");
 const categoriesRouter = require("./routes/categoryRoutes");
 const cartRouter = require("./routes/cartRoutes");
 const favouriteRouter = require("./routes/favouriteRoutes");
-const historyRouter = require("./routes/historyRoutes");
 const topUpRouter = require("./routes/topUpRoutes");
 const emailRouter = require("./routes/emailRoutes");
 const transactionRouter = require("./routes/transactionRoutes");
+const notificationRouter = require("./routes/notificationRoutes");
 
 require("./connection");
 const corsOptions = {
@@ -37,9 +37,9 @@ app.use("/categories", categoriesRouter);
 app.use("/cart", cartRouter);
 app.use("/transaction", transactionRouter);
 app.use("/favourite", favouriteRouter);
-app.use("/history", historyRouter);
 app.use("/topup", topUpRouter);
 app.use("/email", emailRouter);
+app.use("/notification", notificationRouter);
 app.use(errorCatching);
 
 if (process.env.ISSECURE === "false") {

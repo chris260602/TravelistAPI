@@ -269,3 +269,15 @@ exports.verifyAccount = catchAsync(async (req, res, next) => {
     res.redirect(`${process.env.FRONTEND_URL}/404`);
   }
 });
+
+exports.checkUserSessionExpired = catchAsync(async (req, res, next) => {
+  if (checkJWTCookie(req, res)) {
+    res.status(200).json({
+      error: "Success",
+    });
+  } else {
+    res.status(400).json({
+      error: "error",
+    });
+  }
+});

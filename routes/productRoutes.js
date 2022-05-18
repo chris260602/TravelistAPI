@@ -9,6 +9,7 @@ const {
   updateProduct,
   deleteProduct,
   getPopularProducts,
+  getFilteredProducts,
 } = require("../controllers/productController");
 
 const { isAdmin } = require("../controllers/authController");
@@ -45,6 +46,7 @@ router
     ]),
     createProduct
   );
+router.route("/filter").get(getFilteredProducts);
 router.route("/popular").get(getPopularProducts);
 router.route("/:id").get(getProduct);
 

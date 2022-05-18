@@ -14,6 +14,7 @@ const {
   changeUserPassword,
   changeUserName,
   changeUserEmail,
+  checkUserSessionExpired,
 } = require("../controllers/userController");
 const {
   userLogin,
@@ -39,6 +40,7 @@ const upload = multer({
 });
 
 router.route("/").get(getAllUsers).post(createUser);
+router.route("/verifysession").get(checkUserSessionExpired);
 router.route("/getuser/:id").get(getUser);
 router.route("/login").post(userLogin);
 router

@@ -73,7 +73,26 @@ exports.getProduct = catchAsync(async (req, res, next) => {
     });
   }
 }, "Something went wrong");
-
+exports.getFilteredProducts = catchAsync(async (req, res, next) => {
+  // checkJWTCookie(req, res);
+  const { category, name } = req.query;
+  let productList;
+  if (category && name) {
+    productList = await products.find({
+      categoryValue: category,
+      productName: { $regex: `${name}`, $options: "i" },
+    });
+  } else if (category) {
+    productList = await products.find({ categoryValue: category });
+  } else if (name) {
+    productList = await products.find({ productName: { $regex: name } });
+  }
+  const finalProduct = getUsableProductPicture(productList);
+  res.status(200).json({
+    error: "success",
+    data: finalProduct,
+  });
+}, "Something went wrong");
 const deletePicture = () => {
   for (let i = 0; i < this.totalFiles.length; i++) {
     if (this.totalFiles[i] !== null) {
