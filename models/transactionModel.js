@@ -30,7 +30,7 @@ const transactionSchema = new mongoose.Schema({
   status: {
     type: Number,
     required: [true, "Status needed"],
-    default: 0,
+    default: 1,
     min: 0,
   },
   purchaseDate: {

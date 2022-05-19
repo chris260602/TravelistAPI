@@ -93,7 +93,8 @@ exports.getTransaction = catchAsync(async (req, res, next) => {
     } else {
       const transactionQuery = transaction
         .find({ userID: req.params.id })
-        .populate("products.productID");
+        .populate("products.productID")
+        .sort({ purchaseDate: -1 });
       transactionList = await transactionQuery;
       getUsableProductPicture(transactionList);
     }

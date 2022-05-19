@@ -42,6 +42,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     unique: [true, "Must have unique code"],
   },
+  passwordResetCode: {
+    type: String,
+    default: "-1",
+    unique: [true, "Must have unique code"],
+  },
 });
 
 const users = mongoose.model("User", userSchema);

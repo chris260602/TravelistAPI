@@ -5,7 +5,10 @@ const { catchAsync } = require("../errorHandling");
 const jwt = require("jsonwebtoken");
 const Cookies = require("cookies");
 const { checkJWTCookie, getJWTUser } = require("./cookieController");
-const { sendEmailVerification } = require("./emailController");
+const {
+  sendEmailVerification,
+  sendPasswordReset,
+} = require("./emailController");
 const saltRounds = 10;
 exports.newPicture = [];
 
@@ -269,7 +272,57 @@ exports.verifyAccount = catchAsync(async (req, res, next) => {
     res.redirect(`${process.env.FRONTEND_URL}/404`);
   }
 });
-
+exports.forgetUserPassword = catchAsync(async (req, res, next) => {
+  if (
+    req.body.userEmail &&
+    req.body.userPassword &&
+    req.body.userPassword.length > 5
+  ) {
+    let hashedPassword = await bcrypt.hash(req.body.userPassword, saltRounds);
+    const token = jwt.sign(
+      {
+        userEmail: req.body.userEmail,
+        userPassword: hashedPassword,
+      },
+      process.env.JWT_SECRET
+    );
+    await users.findOneAndUpdate(
+      { userEmail: req.body.userEmail },
+      { passwordResetCode: token }
+    );
+    await sendPasswordReset({
+      email: req.body.userEmail,
+      confirmationCode: token,
+    });
+    res.status(200).json({
+      error: "success",
+    });
+  } else {
+    res.status(400).json({
+      error: "Invalid Data",
+    });
+  }
+});
+exports.validateForgetPasswordCode = catchAsync(async (req, res, next) => {
+  if (req.params.code) {
+    let isValid;
+    jwt.verify(req.params.code, process.env.JWT_SECRET, (err, token) => {
+      isValid = token;
+    });
+    if (isValid !== undefined) {
+      const data = await jwt.decode(req.params.code, process.env.JWT_SECRET);
+      await users.findOneAndUpdate(
+        { userEmail: data.userEmail },
+        { password: data.userPassword, passwordResetCode: "-1" }
+      );
+      res.redirect(`${process.env.FRONTEND_URL}/login`);
+    } else {
+      res.redirect(`${process.env.FRONTEND_URL}/404`);
+    }
+  } else {
+    res.redirect(`${process.env.FRONTEND_URL}/404`);
+  }
+});
 exports.checkUserSessionExpired = catchAsync(async (req, res, next) => {
   if (checkJWTCookie(req, res)) {
     res.status(200).json({

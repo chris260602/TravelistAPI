@@ -43,7 +43,7 @@ const createTransporter = async () => {
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
-    secure: true,
+    // secure: true,
     auth: {
       type: "OAuth2",
       user: process.env.EMAIL,
@@ -51,6 +51,9 @@ const createTransporter = async () => {
       clientId: process.env.CLIENT_ID,
       clientSecret: process.env.CLIENT_SECRET,
       refreshToken: process.env.REFRESH_TOKEN,
+    },
+    tls: {
+      rejectUnauthorized: false,
     },
   });
 
@@ -82,6 +85,25 @@ exports.sendEmailVerification = async (emailOptions) => {
     html: `<p>I am sending an account verification from travelist!</p>
      </br>
     <a href=${process.env.BACKEND_URL}/email/verifyaccount/${emailOptions.confirmationCode}>Verify</a>
+    </br>
+    <p>If this is not you, please ignore this message.</p>`,
+    to: emailOptions.email,
+    from: process.env.EMAIL,
+  };
+  let emailTransporter = await createTransporter();
+  await emailTransporter.sendMail(config);
+};
+exports.sendPasswordReset = async (emailOptions) => {
+  const config = {
+    subject: "password reset for " + emailOptions.email,
+    text:
+      "I am sending an password reset link from travelist! " +
+      process.env.BACKEND_URL +
+      "/email/verifyaccount/" +
+      emailOptions.confirmationCode,
+    html: `<p>I am sending an password reset link from travelist!</p>
+     </br>
+    <a href=${process.env.BACKEND_URL}/user/validateforgetpasswordcode/${emailOptions.confirmationCode}>Reset Password</a>
     </br>
     <p>If this is not you, please ignore this message.</p>`,
     to: emailOptions.email,

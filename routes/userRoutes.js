@@ -15,6 +15,8 @@ const {
   changeUserName,
   changeUserEmail,
   checkUserSessionExpired,
+  forgetUserPassword,
+  validateForgetPasswordCode,
 } = require("../controllers/userController");
 const {
   userLogin,
@@ -54,5 +56,9 @@ router.route("/deleteuser/:id").delete(isAuthorizedUser, deleteUser);
 router.route("/changeusername").patch(changeUserName);
 router.route("/changeuserpassword").patch(changeUserPassword);
 router.route("/changeuseremail").patch(changeUserEmail);
+router.route("/forgetpassword").patch(forgetUserPassword);
+router
+  .route("/validateforgetpasswordcode/:code")
+  .get(validateForgetPasswordCode);
 router.route("/activate/:id").post(activeUser);
 module.exports = router;
