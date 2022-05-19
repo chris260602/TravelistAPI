@@ -110,6 +110,10 @@ exports.sendPasswordReset = async (emailOptions) => {
     to: emailOptions.email,
     from: process.env.EMAIL,
   };
-  let emailTransporter = await createTransporter();
-  await emailTransporter.sendMail(config);
+  try {
+    let emailTransporter = await createTransporter();
+    await emailTransporter.sendMail(config);
+  } catch (e) {
+    console.log(e);
+  }
 };
