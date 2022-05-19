@@ -61,20 +61,6 @@ const createTransporter = async () => {
   return transporter;
 };
 
-exports.sendEmail = async (emailOptions) => {
-  // let emailTransporter = await createTransporter();
-  // await emailTransporter.sendMail(emailOptions);
-  // var testMessage = {
-  //   to: "christoperlim20@gmail.com",
-  //   subject: "Test Subject",
-  //   message: "<h1>Test Email</h1>",
-  // };
-  // // ClientSecret:
-  // gmailNode.send(testMessage, function (err, data) {
-  //   console.log(err, data);
-  // });
-};
-
 exports.sendEmailVerification = async (emailOptions) => {
   const config = {
     subject: "Account Verification for " + emailOptions.email,
