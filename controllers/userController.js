@@ -134,7 +134,7 @@ exports.createUser = catchAsync(async (req, res, next) => {
         profilePicture: process.env.DEFAULT_PROFILE_PICTURE,
         confirmationCode: token,
       });
-      sendEmailVerification({
+      await sendEmailVerification({
         email: req.body.userEmail,
         confirmationCode: token,
       });
