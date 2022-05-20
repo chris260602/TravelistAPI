@@ -1,25 +1,6 @@
 const nodemailer = require("nodemailer");
-// var gmailNode = require("gmail-node");
-const { google, drive_v3, Auth, Common } = require("googleapis");
+const { google } = require("googleapis");
 const OAuth2 = google.auth.OAuth2;
-
-// var clientSecret = {
-//   installed: {
-//     client_id: process.env.CLIENT_ID,
-//     project_id: "travelist-345505",
-//     auth_uri: "https://accounts.google.com/o/oauth2/auth",
-//     token_uri: "https://oauth2.googleapis.com/token",
-//     auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
-//     client_secret: process.env.CLIENT_SECRET,
-//     redirect_uris: ["https://developers.google.com/oauthplayground"],
-//   },
-// };
-// gmailNode.init(clientSecret, "./token.json", initComplete);
-// function initComplete(err, dataObject) {
-//   if (err) {
-//     console.log("Error ", err);
-//   }
-// }
 
 const createTransporter = async () => {
   const oauth2Client = new OAuth2(

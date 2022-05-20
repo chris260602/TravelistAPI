@@ -17,7 +17,6 @@ exports.getAllNotification = catchAsync(async (req, res, next) => {
 }, "Something went wrong");
 
 exports.getNotificationByUserId = catchAsync(async (req, res, next) => {
-  //   console.log(req.params.id);
   const { id } = req.params;
   const notificationList = await notifications.find({ userID: id });
   res.status(200).json({

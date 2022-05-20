@@ -45,26 +45,6 @@ exports.getCategory = catchAsync(async (req, res, next) => {
   });
 }, "Something went wrong");
 
-// exports.checkCategory = (category) => {
-//   if (
-//     category === "Bathroom" ||
-//     category === "Electronics" ||
-//     category === "Kitchen" ||
-//     category === "Clothes" ||
-//     category === "BeautyHealth" ||
-//     category === "Tools" ||
-//     category === "Bag" ||
-//     category === "Accessories" ||
-//     category === "FoodDrinks" ||
-//     category === "Bed" ||
-//     category === "Pest Control" ||
-//     category === "Games"
-//   ) {
-//     return true;
-//   } else {
-//     return false;
-//   }
-// };
 const deleteIcon = (oldIcon) => {
   fs.unlink(`${process.env.CATEGORY_PICTURE_URL}/${oldIcon}`, (err) => {
     if (err) {
@@ -77,8 +57,6 @@ exports.createCategory = catchAsync(async (req, res, next) => {
     req.body.categoryName &&
     req.body.categoryName.length > 1 &&
     req.body.categoryValue
-    // &&
-    // this.checkCategory(req.body.categoryValue)
   ) {
     await categories.create({
       categoryName: req.body.categoryName,

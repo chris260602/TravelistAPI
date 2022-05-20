@@ -19,7 +19,6 @@ const corsOptions = {
   origin: [process.env.FRONTEND_URL],
   credentials: true,
 };
-// console.log(`${__dirname}/public/img`);
 const cors = require("cors");
 app.use(express.json({ limit: "16mb" }));
 app.use(cors(corsOptions));

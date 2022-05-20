@@ -1,9 +1,6 @@
 const express = require("express");
 
-const {
-  isAuthorizedUser,
-  isAuthorizedUserFromBody,
-} = require("../controllers/authController");
+const { isAuthorizedUserFromBody } = require("../controllers/authController");
 const {
   getTransaction,
   addTransaction,
@@ -11,7 +8,6 @@ const {
   deleteTransaction,
 } = require("../controllers/transactionController");
 const router = express.Router();
-// isAuthorizedUser,
 router.route("/:id").get(getTransaction);
 router.route("/add").post(isAuthorizedUserFromBody, addTransaction);
 router
